@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DSP AI Policy Editor</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/editor/editor.main.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">DSP AI Policy Editor</a>
+        </div>
+    </nav>
+
+    <div class="container-fluid mt-3">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Policies</h5>
+                        <button class="btn btn-primary btn-sm" id="newPolicyBtn">New Policy</button>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-group" id="policyList"></ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-9">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <input type="text" class="form-control w-25" id="policyName" placeholder="Policy Name">
+                            <div>
+                                <button class="btn btn-success" id="saveBtn">Save</button>
+                                <button class="btn btn-primary" id="evaluateBtn">Evaluate</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div id="editor" style="height: 500px; border: 1px solid #ccc;"></div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label class="form-label">Input JSON:</label>
+                                    <div id="inputEditor" style="height: 200px; border: 1px solid #ccc;"></div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Query:</label>
+                                    <input type="text" class="form-control" id="queryInput" value="data.example.allow">
+                                </div>
+                                <div>
+                                    <label class="form-label">Result:</label>
+                                    <pre id="evaluationResult" class="border p-2" style="max-height: 200px; overflow-y: auto;"></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>var require = { paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs' } };</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/editor/editor.main.nls.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/editor/editor.main.js"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

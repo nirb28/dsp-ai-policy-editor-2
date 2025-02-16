@@ -1,0 +1,30 @@
+body {
+    background-color: #f8f9fa;
+}
+
+.card {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+#policyList {
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.policy-item {
+    cursor: pointer;
+}
+
+.policy-item:hover {
+    background-color: #f8f9fa;
+}
+
+.policy-item.active {
+    background-color: #0d6efd;
+    color: white;
+}
+
+#evaluationResult {
+    background-color: #f8f9fa;
+    border-radius: 0.25rem;
+}
