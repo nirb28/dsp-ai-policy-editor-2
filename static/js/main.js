@@ -7,7 +7,8 @@ require(['vs/editor/editor.main'], function() {
         value: '# Write your Rego policy here\npackage example\n\ndefault allow = false\n\nallow {\n    input.user.role == "admin"\n}',
         language: 'ruby', // Using Ruby syntax highlighting for Rego
         theme: 'vs-dark',
-        minimap: { enabled: false }
+        minimap: { enabled: false },
+        readOnly: !document.getElementById('saveBtn')  // Read-only if save button doesn't exist (non-MRM user)
     });
 
     inputEditor = monaco.editor.create(document.getElementById('inputEditor'), {
@@ -16,9 +17,6 @@ require(['vs/editor/editor.main'], function() {
         theme: 'vs-dark',
         minimap: { enabled: false }
     });
-
-    // Set default query
-    document.getElementById('queryInput').value = 'data.example.allow';
 
     loadPolicies();
 });
@@ -115,8 +113,7 @@ async function evaluatePolicy() {
             },
             body: JSON.stringify({
                 policy: editor.getValue(),
-                input: inputJson,
-                query: document.getElementById('queryInput').value
+                input: inputJson
             })
         });
         
@@ -140,6 +137,50 @@ async function evaluatePolicy() {
     }
 }
 
+// Generate JWT token for the current policy
+async function generateToken() {
+    const resultElement = document.getElementById('jwtToken');
+    const expiryElement = document.getElementById('tokenExpiry');
+    
+    try {
+        const response = await fetch('/api/generate-token', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                policy: editor.getValue()
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            resultElement.value = data.token;
+            expiryElement.textContent = `Expires: ${new Date(data.expires).toLocaleString()}`;
+        } else {
+            alert(`Error: ${data.error || 'Failed to generate token'}`);
+        }
+    } catch (error) {
+        alert(`Error: ${error.message}`);
+    }
+}
+
+// Copy token to clipboard
+function copyToken() {
+    const tokenInput = document.getElementById('jwtToken');
+    tokenInput.select();
+    document.execCommand('copy');
+    
+    // Visual feedback
+    const copyBtn = document.getElementById('copyTokenBtn');
+    const originalText = copyBtn.textContent;
+    copyBtn.textContent = 'Copied!';
+    setTimeout(() => {
+        copyBtn.textContent = originalText;
+    }, 2000);
+}
+
 // Event listeners
 document.getElementById('newPolicyBtn').onclick = () => {
     currentPolicyId = null;
@@ -150,3 +191,5 @@ document.getElementById('newPolicyBtn').onclick = () => {
 
 document.getElementById('saveBtn').onclick = savePolicy;
 document.getElementById('evaluateBtn').onclick = evaluatePolicy;
+document.getElementById('generateTokenBtn').onclick = generateToken;
+document.getElementById('copyTokenBtn').onclick = copyToken;

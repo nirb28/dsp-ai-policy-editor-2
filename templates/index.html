@@ -11,7 +11,15 @@
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container-fluid">
-            <a class="navbar-brand" href="#">DSP AI Policy Editor</a>
+            <a class="navbar-brand" href="/">DSP AI Policy Editor</a>
+            <div class="navbar-nav me-auto">
+                <a class="nav-link active" href="/">Editor</a>
+                <a class="nav-link" href="/validate">Validate Token</a>
+            </div>
+            <div class="navbar-nav">
+                <span class="nav-link">{{ user.username }} ({{ user.role }})</span>
+                <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+            </div>
         </div>
     </nav>
 
@@ -21,7 +29,9 @@
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h5 class="mb-0">Policies</h5>
+                        {% if user.is_mrm() %}
                         <button class="btn btn-primary btn-sm" id="newPolicyBtn">New Policy</button>
+                        {% endif %}
                     </div>
                     <div class="card-body">
                         <ul class="list-group" id="policyList"></ul>
@@ -32,10 +42,13 @@
                 <div class="card">
                     <div class="card-header">
                         <div class="d-flex justify-content-between align-items-center">
-                            <input type="text" class="form-control w-25" id="policyName" placeholder="Policy Name">
+                            <input type="text" class="form-control w-25" id="policyName" placeholder="Policy Name" {% if not user.is_mrm() %}readonly{% endif %}>
                             <div>
+                                {% if user.is_mrm() %}
                                 <button class="btn btn-success" id="saveBtn">Save</button>
+                                {% endif %}
                                 <button class="btn btn-primary" id="evaluateBtn">Evaluate</button>
+                                <button class="btn btn-secondary" id="generateTokenBtn">Generate Token</button>
                             </div>
                         </div>
                     </div>
@@ -50,12 +63,18 @@
                                     <div id="inputEditor" style="height: 200px; border: 1px solid #ccc;"></div>
                                 </div>
                                 <div class="mb-3">
-                                    <label class="form-label">Query:</label>
-                                    <input type="text" class="form-control" id="queryInput" value="data.example.allow">
+                                    <label class="form-label">Evaluation Result:</label>
+                                    <pre id="evaluationResult" class="p-2 bg-light" style="min-height: 100px; border: 1px solid #ccc;"></pre>
                                 </div>
-                                <div>
-                                    <label class="form-label">Result:</label>
-                                    <pre id="evaluationResult" class="border p-2" style="max-height: 200px; overflow-y: auto;"></pre>
+                                <div class="mb-3">
+                                    <label class="form-label">JWT Token:</label>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" id="jwtToken" readonly>
+                                        <button class="btn btn-outline-secondary" type="button" id="copyTokenBtn">
+                                            Copy
+                                        </button>
+                                    </div>
+                                    <small class="text-muted" id="tokenExpiry"></small>
                                 </div>
                             </div>
                         </div>
