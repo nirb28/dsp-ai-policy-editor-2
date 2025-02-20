@@ -1,0 +1,17 @@
+{
+    "user": {
+        "role": "ml_engineer"
+    },
+    "action": "deploy",
+    "resource": {
+        "type": "model",
+        "current_state": "approved",
+        "deployment": {
+            "environment": "prod"
+        },
+        "approvals": {
+            "technical_review": true,
+            "business_review": true
+        }
+    }
+}
