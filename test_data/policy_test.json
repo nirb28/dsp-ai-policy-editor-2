@@ -1,0 +1,16 @@
+{
+    "input": {
+        "user": {
+            "role": "data_scientist"
+        },
+        "action": "create",
+        "resource": {
+            "type": "model",
+            "metadata": {
+                "name": "sentiment_analysis",
+                "version": "1.0.0",
+                "framework": "pytorch"
+            }
+        }
+    }
+}

@@ -1,0 +1,70 @@
+[
+    {
+        "name": "Create model as data scientist",
+        "input": {
+            "user": {
+                "role": "data_scientist"
+            },
+            "action": "create",
+            "resource": {
+                "type": "model",
+                "metadata": {
+                    "name": "sentiment_analysis",
+                    "version": "1.0.0",
+                    "framework": "pytorch"
+                }
+            }
+        }
+    },
+    {
+        "name": "Deploy model to production as ML engineer",
+        "input": {
+            "user": {
+                "role": "ml_engineer"
+            },
+            "action": "deploy",
+            "resource": {
+                "type": "model",
+                "current_state": "approved",
+                "deployment": {
+                    "environment": "prod"
+                },
+                "approvals": {
+                    "technical_review": true,
+                    "business_review": true
+                }
+            }
+        }
+    },
+    {
+        "name": "Delete deployed model as admin",
+        "input": {
+            "user": {
+                "role": "admin"
+            },
+            "action": "delete",
+            "resource": {
+                "type": "model",
+                "current_state": "deployed"
+            }
+        }
+    },
+    {
+        "name": "Train model as viewer (should fail)",
+        "input": {
+            "user": {
+                "role": "viewer"
+            },
+            "action": "train",
+            "resource": {
+                "type": "model",
+                "training": {
+                    "dataset_version": "1.0.0",
+                    "hyperparameters": {
+                        "learning_rate": 0.001
+                    }
+                }
+            }
+        }
+    }
+]

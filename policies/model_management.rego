@@ -1,5 +1,7 @@
 package model_management
 
+import future.keywords.in
+
 # Default to deny
 default allow = false
 
@@ -31,15 +33,20 @@ action_allowed_for_role(role, action) {
 
 # Model state transitions
 valid_state_transition(from, to) {
-    from == "draft" ; to == "in_review"
+    from == "draft"
+    to == "in_review"
 } {
-    from == "in_review" ; to == "approved"
+    from == "in_review"
+    to == "approved"
 } {
-    from == "in_review" ; to == "rejected"
+    from == "in_review"
+    to == "rejected"
 } {
-    from == "approved" ; to == "deployed"
+    from == "approved"
+    to == "deployed"
 } {
-    from == "deployed" ; to == "archived"
+    from == "deployed"
+    to == "archived"
 }
 
 # Main allow rule
@@ -63,62 +70,84 @@ allow {
 }
 
 # Action specific validation rules
-action_specific_checks := {
+action_specific_checks = {
     # Create model
-    "create": {
-        input.resource.metadata.name
-        input.resource.metadata.version
-        input.resource.metadata.framework
-    },
+    "create": valid_create,
     
     # Update model
-    "update": {
-        # Must provide state transition if changing state
-        not input.resource.state_transition
-        or
-        valid_state_transition(input.resource.current_state, input.resource.state_transition)
-    },
+    "update": valid_update,
     
     # Deploy model
-    "deploy": {
-        # Only approved models can be deployed
-        input.resource.current_state == "approved"
-        
-        # Must specify deployment environment
-        input.resource.deployment.environment
-        
-        # Environment must be valid
-        input.resource.deployment.environment in ["dev", "staging", "prod"]
-        
-        # Production deployments require additional approvals
-        not input.resource.deployment.environment == "prod"
-        or
-        input.resource.approvals.technical_review
-        input.resource.approvals.business_review
-    },
+    "deploy": valid_deploy,
     
     # Train model
-    "train": {
-        # Must specify training parameters
-        input.resource.training.dataset_version
-        input.resource.training.hyperparameters
-        
-        # If using GPU, must specify requirements
-        not input.resource.training.use_gpu
-        or
-        input.resource.training.gpu_requirements
-    },
+    "train": valid_train,
     
     # Read model
-    "read": {
-        true  # No additional checks for read
-    },
+    "read": valid_read,
     
     # Delete model
-    "delete": {
-        # Can only delete models in draft or rejected state
-        input.resource.current_state in ["draft", "rejected"]
-    }
+    "delete": valid_delete
+}
+
+# Validation rules for each action
+valid_create {
+    input.resource.metadata.name
+    input.resource.metadata.version
+    input.resource.metadata.framework
+}
+
+valid_update {
+    # Must provide state transition if changing state
+    not input.resource.state_transition
+} {
+    valid_state_transition(input.resource.current_state, input.resource.state_transition)
+}
+
+# List of valid environments
+valid_environments = ["dev", "staging", "prod"]
+
+valid_deploy {
+    # Only approved models can be deployed
+    input.resource.current_state == "approved"
+    
+    # Must specify deployment environment
+    input.resource.deployment.environment
+    
+    # Environment must be valid
+    some env in valid_environments
+    input.resource.deployment.environment == env
+    
+    # Production deployments require additional approvals
+    input.resource.deployment.environment != "prod"
+} {
+    # Additional rule for production deployments
+    input.resource.deployment.environment == "prod"
+    input.resource.approvals.technical_review == true
+    input.resource.approvals.business_review == true
+}
+
+valid_train {
+    # Must specify training parameters
+    input.resource.training.dataset_version
+    input.resource.training.hyperparameters
+    
+    # If using GPU, must specify requirements
+    not input.resource.training.use_gpu
+} {
+    input.resource.training.use_gpu == true
+    input.resource.training.gpu_requirements
+}
+
+valid_read {
+    true  # No additional checks for read
+}
+
+valid_delete {
+    # Can only delete models in draft or rejected state
+    input.resource.current_state == "draft"
+} {
+    input.resource.current_state == "rejected"
 }
 
 # Example violation messages

@@ -1,20 +1,22 @@
-import requests
 import json
 import os
+from opa_client import evaluate_policy
 
 def test_policy(input_file):
+    # Read input data
     with open(input_file, 'r') as f:
         input_data = json.load(f)
     
-    # Send request to local Flask server
-    response = requests.post('http://localhost:5000/evaluate_policy', json={
-        'policy_name': 'model_management',
-        'input': input_data
-    })
+    # Read policy content
+    with open('policies/model_management.rego', 'r') as f:
+        policy_content = f.read()
     
     print(f"\nTesting input from {os.path.basename(input_file)}:")
     print("Input:", json.dumps(input_data, indent=2))
-    print("Result:", json.dumps(response.json(), indent=2))
+    
+    # Evaluate policy directly using opa_client
+    result = evaluate_policy(policy_content, input_data)
+    print("Result:", json.dumps(result, indent=2))
     print("-" * 80)
 
 def main():
