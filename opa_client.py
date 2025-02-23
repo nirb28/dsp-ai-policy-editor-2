@@ -5,7 +5,7 @@ def evaluate_policy(policy_content, input_data):
     """
     Evaluate a Rego policy using OPA Playground API
     """
-    endpoint = "https://play.openpolicyagent.org/v1/data/play/hello"
+    endpoint = "https://play.openpolicyagent.org/v1/data"
     
     # Prepare payload to match working structure
     payload = {

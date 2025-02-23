@@ -1,0 +1,8 @@
+{
+    "user": {
+        "role": "data_scientist",
+        "username": "alice"
+    },
+    "action": "deploy",
+    "model_id": "model_456"
+}
