@@ -1,35 +1,19 @@
-﻿package bac_model
-
-# Declare version
-version = 1
+package dspai_policy
 
 # Default deny all access
 default allow := false
 
 # Input schema validation
-valid_input if {
+valid_input {
     input.user
     input.action
     input.resource
-    input.usecase
+    input.usecase == "customer_service"
     input.resource.type == "llm_model"
 }
 
-# Define allowed models per usecase
-allowed_models := {
-    "customer_service": ["gpt-4", "claude-2", "llama-2-70b"],
-    "fraud_detection": ["gpt-4", "claude-2"],
-    "document_analysis": ["gpt-4", "claude-2", "palm-2"],
-    "trading_analysis": ["claude-2"]
-}
-
-# Define required security levels per usecase
-required_security_level := {
-    "customer_service": 2,
-    "fraud_detection": 3,
-    "document_analysis": 2,
-    "trading_analysis": 3
-}
+# Define allowed models for customer service
+allowed_models := ["gpt-4", "claude-2", "llama-2-70b"]
 
 # Define roles and their permissions
 roles := {
@@ -39,45 +23,35 @@ roles := {
     "business_user": ["infer"]
 }
 
-# Check if model is allowed for usecase
-model_allowed_for_usecase if {
-    some model, usecase
-    model == input.resource.model_id
-    usecase == input.usecase
-    model in allowed_models[usecase]
-}
-
-# Check if user has required security clearance
-has_security_clearance if {
-    some usecase
-    usecase == input.usecase
-    input.user.security_level >= required_security_level[usecase]
+# Check if model is allowed for customer service
+model_allowed_for_usecase {
+    some i
+    allowed_models[i] == input.resource.model_id
 }
 
 # Check if user has required role
-has_role if {
+has_role {
     some role
     role == input.user.role
     roles[role]
 }
 
 # Check if action is allowed for role
-action_allowed_for_role if {
-    some role, action
-    role == input.user.role
-    action == input.action
-    action in roles[role]
+action_allowed_for_role {
+    some i
+    role := input.user.role
+    action := input.action
+    roles[role][i] == action
 }
 
 # Main allow rule
-allow if {
+allow {
     # Validate input
     valid_input
     
     # Basic authorization checks
     has_role
     action_allowed_for_role
-    has_security_clearance
     
     # Model-specific checks
     model_allowed_for_usecase
@@ -94,7 +68,7 @@ action_specific_checks := {
 }
 
 # Training validation
-valid_train if {
+valid_train {
     # Must have approved training data
     input.resource.training_data.approved == true
     
@@ -108,7 +82,7 @@ valid_train if {
 }
 
 # Inference validation
-valid_infer if {
+valid_infer {
     # Model must be in approved state
     input.resource.status == "approved"
     
@@ -117,7 +91,7 @@ valid_infer if {
 }
 
 # Deployment validation
-valid_deploy if {
+valid_deploy {
     # Must have all required approvals
     input.resource.approvals.security == true
     input.resource.approvals.compliance == true
