@@ -150,7 +150,7 @@ def evaluate_policy_endpoint():
     except json.JSONDecodeError:
         return jsonify({"error": "Invalid input JSON"}), 400
     
-    result = evaluate_policy(
+    result = eval   `uate_policy(
         policy_content=policy_content,
         input_data=input_data
     )

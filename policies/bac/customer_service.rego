@@ -1,10 +1,15 @@
-package dspai_policy
+package dspai.policy
+
+import rego.v1
+
+# Declare version
+version = 1
 
 # Default deny all access
 default allow := false
 
 # Input schema validation
-valid_input {
+valid_input if {
     input.user
     input.action
     input.resource
@@ -24,28 +29,26 @@ roles := {
 }
 
 # Check if model is allowed for customer service
-model_allowed_for_usecase {
+model_allowed_for_usecase if {
     some i
     allowed_models[i] == input.resource.model_id
 }
 
 # Check if user has required role
-has_role {
+has_role if {
     some role
     role == input.user.role
     roles[role]
 }
 
 # Check if action is allowed for role
-action_allowed_for_role {
+action_allowed_for_role if {
     some i
-    role := input.user.role
-    action := input.action
-    roles[role][i] == action
+    roles[input.user.role][i] == input.action
 }
 
-# Main allow rule
-allow {
+# Main allow rule for basic actions (read, create, update, delete)
+allow if {
     # Validate input
     valid_input
     
@@ -56,19 +59,80 @@ allow {
     # Model-specific checks
     model_allowed_for_usecase
     
-    # Additional checks based on action type
-    action_specific_checks[input.action]
+    # Only for basic actions
+    basic_action
 }
 
-# Action specific validation rules
-action_specific_checks := {
-    "train": valid_train,
-    "infer": valid_infer,
-    "deploy": valid_deploy
+# Check if action is a basic action
+basic_action if {
+    input.action == "read"
+}
+
+basic_action if {
+    input.action == "create"
+}
+
+basic_action if {
+    input.action == "update"
+}
+
+basic_action if {
+    input.action == "delete"
+}
+
+# Allow rule for train action
+allow if {
+    # Validate input
+    valid_input
+    
+    # Basic authorization checks
+    has_role
+    action_allowed_for_role
+    
+    # Model-specific checks
+    model_allowed_for_usecase
+    
+    # Specific to train action
+    input.action == "train"
+    valid_train
+}
+
+# Allow rule for deploy action
+allow if {
+    # Validate input
+    valid_input
+    
+    # Basic authorization checks
+    has_role
+    action_allowed_for_role
+    
+    # Model-specific checks
+    model_allowed_for_usecase
+    
+    # Specific to deploy action
+    input.action == "deploy"
+    valid_deploy
+}
+
+# Allow rule for infer action
+allow if {
+    # Validate input
+    valid_input
+    
+    # Basic authorization checks
+    has_role
+    action_allowed_for_role
+    
+    # Model-specific checks
+    model_allowed_for_usecase
+    
+    # Specific to infer action
+    input.action == "infer"
+    valid_infer
 }
 
 # Training validation
-valid_train {
+valid_train if {
     # Must have approved training data
     input.resource.training_data.approved == true
     
@@ -82,7 +146,7 @@ valid_train {
 }
 
 # Inference validation
-valid_infer {
+valid_infer if {
     # Model must be in approved state
     input.resource.status == "approved"
     
@@ -91,7 +155,7 @@ valid_infer {
 }
 
 # Deployment validation
-valid_deploy {
+valid_deploy if {
     # Must have all required approvals
     input.resource.approvals.security == true
     input.resource.approvals.compliance == true
